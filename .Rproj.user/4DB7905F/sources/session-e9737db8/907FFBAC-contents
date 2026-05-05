@@ -1,0 +1,281 @@
+# ==============================================================================
+# 06d_generate_tables.R
+# Create publication-quality regression table PNGs from saved results
+# ==============================================================================
+
+# ==============================================================================
+# HELPER FUNCTIONS
+# ==============================================================================
+
+format_coef <- function(coef, se) {
+  pval <- 2 * pt(abs(coef / se), df = 130, lower.tail = FALSE)
+  stars <- case_when(
+    pval < 0.01 ~ "***",
+    pval < 0.05 ~ "**",
+    pval < 0.10 ~ "*",
+    TRUE ~ ""
+  )
+  sprintf("%.2f%s", coef, stars)
+}
+
+format_se <- function(se) {
+  sprintf("(%.2f)", se)
+}
+
+run_and_format <- function(data, dep_var) {
+  mod <- lm(as.formula(paste(dep_var, "~ delta_computer")),
+            data = data, weights = emp_weight)
+  s <- summary(mod)
+  
+  tibble(
+    row = c("Computer use", "se_comp", "Intercept", "se_int", "R²", "Weighted mean"),
+    value = c(
+      format_coef(coef(mod)[2], s$coefficients[2, 2]),
+      format_se(s$coefficients[2, 2]),
+      sprintf("%.2f", coef(mod)[1]),
+      format_se(s$coefficients[1, 2]),
+      sprintf("%.2f", s$r.squared),
+      sprintf("%.2f", weighted.mean(data[[dep_var]], data$emp_weight))
+    )
+  )
+}
+
+# Common panel definitions
+dep_vars <- c("d_GED_MATH", "d_DCP", "d_STS", "d_FINGDEX")
+panel_codes <- c("A", "B", "C", "D")
+panel_names <- c(
+  "A" = "Panel A. Δ Nonroutine analytic",
+  "B" = "Panel B. Δ Nonroutine interactive",
+  "C" = "Panel C. Δ Routine cognitive",
+  "D" = "Panel D. Δ Routine manual"
+)
+
+# ==============================================================================
+# PART I TABLE
+# ==============================================================================
+
+reg_data <- readRDS(file.path(DATA_FINAL, "tableIII_data.rds"))
+decade_order <- c("1960-1970", "1970-1980", "1980-1990", "1990-1998")
+
+part1_rows <- list()
+
+for (p in seq_along(dep_vars)) {
+  for (dec in decade_order) {
+    d <- reg_data %>% filter(decade == dec)
+    result <- run_and_format(d, dep_vars[p])
+    result$panel <- panel_codes[p]
+    result$decade <- dec
+    part1_rows <- c(part1_rows, list(result))
+  }
+}
+
+part1_long <- bind_rows(part1_rows)
+
+part1_wide <- part1_long %>%
+  pivot_wider(names_from = decade, values_from = value) %>%
+  mutate(
+    panel = panel_names[panel],
+    row = case_when(
+      row %in% c("se_comp", "se_int") ~ "",
+      TRUE ~ row
+    )
+  ) %>%
+  select(panel, row, all_of(decade_order))
+
+part1_gt <- part1_wide %>%
+  gt(groupname_col = "panel") %>%
+  cols_label(
+    row = "",
+    `1960-1970` = "1960–1970",
+    `1970-1980` = "1970–1980",
+    `1980-1990` = "1980–1990",
+    `1990-1998` = "1990–1998"
+  ) %>%
+  cols_align(align = "center", columns = -row) %>%
+  cols_align(align = "left", columns = row) %>%
+  tab_header(
+    title = "Table III Replication: Computerization and Industry Task Input, 1960–1998",
+    subtitle = "Dependent variable: 10 × annual within-industry change in task input (percentiles of 1960 task distribution)"
+  ) %>%
+  tab_source_note(
+    source_note = sprintf("n = %d consistent ind1990dd industries. Standard errors in parentheses. Weighted by mean industry share of total employment in FTEs.",
+                          n_distinct(reg_data$ind1990dd))
+  ) %>%
+  tab_source_note(source_note = "* p < 0.10, ** p < 0.05, *** p < 0.01") %>%
+  tab_style(style = cell_text(size = px(12)), locations = cells_body()) %>%
+  tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups()) %>%
+  tab_style(style = cell_text(size = px(14), weight = "bold"), locations = cells_title(groups = "title")) %>%
+  tab_style(style = cell_text(size = px(11), style = "italic"), locations = cells_title(groups = "subtitle")) %>%
+  tab_options(table.width = pct(100), row_group.padding = px(4), data_row.padding = px(2))
+
+gtsave(part1_gt, file.path(OUTPUT, "01_tables", "tableIII_replication.png"), expand = 10)
+cat("Saved tableIII_replication.png\n")
+
+# ==============================================================================
+# PART II TABLE
+# ==============================================================================
+
+ext_reg <- readRDS(file.path(DATA_FINAL, "tableIII_extension_data.rds"))
+ext_decade_order <- c("2000-2010", "2010-2020")
+
+part2_rows <- list()
+
+for (p in seq_along(dep_vars)) {
+  for (dec in ext_decade_order) {
+    d <- ext_reg %>% filter(decade == dec)
+    if (nrow(d) == 0) next
+    result <- run_and_format(d, dep_vars[p])
+    result$panel <- panel_codes[p]
+    result$decade <- dec
+    part2_rows <- c(part2_rows, list(result))
+  }
+}
+
+part2_long <- bind_rows(part2_rows)
+
+part2_wide <- part2_long %>%
+  pivot_wider(names_from = decade, values_from = value) %>%
+  mutate(
+    panel = panel_names[panel],
+    row = case_when(
+      row %in% c("se_comp", "se_int") ~ "",
+      TRUE ~ row
+    )
+  ) %>%
+  select(panel, row, all_of(ext_decade_order))
+
+part2_gt <- part2_wide %>%
+  gt(groupname_col = "panel") %>%
+  cols_label(
+    row = "",
+    `2000-2010` = "2000–2010",
+    `2010-2020` = "2010–2020"
+  ) %>%
+  cols_align(align = "center", columns = -row) %>%
+  cols_align(align = "left", columns = row) %>%
+  tab_header(
+    title = "Table III Extension: Computerization and Industry Task Input, 2000–2020",
+    subtitle = "Dependent variable: 10 × annual within-industry change in task input (percentiles of 2000 O*NET task distribution)"
+  ) %>%
+  tab_source_note(
+    source_note = "Standard errors in parentheses. Computer use measured as 1997–2003 change."
+  ) %>%
+  tab_source_note(source_note = "* p < 0.10, ** p < 0.05, *** p < 0.01") %>%
+  tab_style(style = cell_text(size = px(12)), locations = cells_body()) %>%
+  tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups()) %>%
+  tab_style(style = cell_text(size = px(14), weight = "bold"), locations = cells_title(groups = "title")) %>%
+  tab_style(style = cell_text(size = px(11), style = "italic"), locations = cells_title(groups = "subtitle")) %>%
+  tab_options(table.width = pct(80), row_group.padding = px(4), data_row.padding = px(2))
+
+gtsave(part2_gt, file.path(OUTPUT, "01_tables", "tableIII_extension.png"), expand = 10)
+cat("Saved tableIII_extension.png\n")
+
+# ==============================================================================
+# COMPARISON TABLE (Replication vs ALM)
+# ==============================================================================
+
+alm_published <- tribble(
+  ~panel, ~decade,      ~alm_coef, ~alm_se,
+  "A",    "1960-1970",   7.49,      5.28,
+  "A",    "1970-1980",   9.11,      4.17,
+  "A",    "1980-1990",  14.02,      4.97,
+  "A",    "1990-1998",  12.04,      4.74,
+  "B",    "1960-1970",   7.55,      6.64,
+  "B",    "1970-1980",  10.81,      5.71,
+  "B",    "1980-1990",  17.21,      6.32,
+  "B",    "1990-1998",  14.78,      5.48,
+  "C",    "1960-1970",   3.90,      4.48,
+  "C",    "1970-1980", -11.00,      5.40,
+  "C",    "1980-1990", -13.94,      5.72,
+  "C",    "1990-1998", -17.57,      5.54,
+  "D",    "1960-1970",   4.15,      3.50,
+  "D",    "1970-1980",  -6.56,      4.84,
+  "D",    "1980-1990",  -5.94,      5.64,
+  "D",    "1990-1998", -24.72,      5.77
+)
+
+comp_rows <- list()
+
+for (p in seq_along(dep_vars)) {
+  for (dec in decade_order) {
+    d <- reg_data %>% filter(decade == dec)
+    mod <- lm(as.formula(paste(dep_vars[p], "~ delta_computer")),
+              data = d, weights = emp_weight)
+    s <- summary(mod)
+    
+    alm <- alm_published %>% filter(panel == panel_codes[p], decade == dec)
+    
+    comp_rows <- c(comp_rows, list(tibble(
+      panel = panel_codes[p],
+      decade = dec,
+      row = c("Coef", "se_row"),
+      replication = c(
+        format_coef(coef(mod)[2], s$coefficients[2, 2]),
+        format_se(s$coefficients[2, 2])
+      ),
+      alm = c(
+        format_coef(alm$alm_coef, alm$alm_se),
+        format_se(alm$alm_se)
+      )
+    )))
+  }
+}
+
+comp_long <- bind_rows(comp_rows)
+
+comp_wide <- comp_long %>%
+  pivot_wider(names_from = decade,
+              values_from = c(replication, alm),
+              names_glue = "{decade}_{.value}") %>%
+  mutate(
+    panel = panel_names[panel],
+    row = case_when(
+      row == "se_row" ~ "",
+      TRUE ~ row
+    )
+  ) %>%
+  select(panel, row,
+         `1960-1970_replication`, `1960-1970_alm`,
+         `1970-1980_replication`, `1970-1980_alm`,
+         `1980-1990_replication`, `1980-1990_alm`,
+         `1990-1998_replication`, `1990-1998_alm`)
+
+comp_gt <- comp_wide %>%
+  gt(groupname_col = "panel") %>%
+  cols_label(
+    row = "",
+    `1960-1970_replication` = "Repl.", `1960-1970_alm` = "ALM",
+    `1970-1980_replication` = "Repl.", `1970-1980_alm` = "ALM",
+    `1980-1990_replication` = "Repl.", `1980-1990_alm` = "ALM",
+    `1990-1998_replication` = "Repl.", `1990-1998_alm` = "ALM"
+  ) %>%
+  tab_spanner(label = "1960–1970", columns = c(`1960-1970_replication`, `1960-1970_alm`)) %>%
+  tab_spanner(label = "1970–1980", columns = c(`1970-1980_replication`, `1970-1980_alm`)) %>%
+  tab_spanner(label = "1980–1990", columns = c(`1980-1990_replication`, `1980-1990_alm`)) %>%
+  tab_spanner(label = "1990–1998", columns = c(`1990-1998_replication`, `1990-1998_alm`)) %>%
+  cols_align(align = "center", columns = -row) %>%
+  cols_align(align = "left", columns = row) %>%
+  tab_header(
+    title = "Table III Comparison: Replication vs. ALM (2003)",
+    subtitle = "Coefficients on Δ Computer use (standard errors in parentheses)"
+  ) %>%
+  tab_source_note(
+    source_note = "ALM results from Autor, Levy, and Murnane (2003), Table III, p. 1304."
+  ) %>%
+  tab_source_note(
+    source_note = sprintf("Replication: n = %d ind1990dd industries. ALM: n = 140 CIC industries. * p < 0.10, ** p < 0.05, *** p < 0.01",
+                          n_distinct(reg_data$ind1990dd))
+  ) %>%
+  tab_style(style = cell_text(size = px(11)), locations = cells_body()) %>%
+  tab_style(style = cell_text(weight = "bold"), locations = cells_row_groups()) %>%
+  tab_style(style = cell_text(size = px(13), weight = "bold"), locations = cells_title(groups = "title")) %>%
+  tab_style(style = cell_text(size = px(10), style = "italic"), locations = cells_title(groups = "subtitle")) %>%
+  tab_style(
+    style = cell_fill(color = "#f0f4f8"),
+    locations = cells_body(columns = c(`1960-1970_alm`, `1970-1980_alm`,
+                                       `1980-1990_alm`, `1990-1998_alm`))
+  ) %>%
+  tab_options(table.width = pct(100), row_group.padding = px(4), data_row.padding = px(2))
+
+gtsave(comp_gt, file.path(OUTPUT, "01_tables", "tableIII_comparison.png"), expand = 10)
+cat("Saved tableIII_comparison.png\n")

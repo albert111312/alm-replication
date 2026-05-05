@@ -1,0 +1,27 @@
+{
+    "id": "3E45AE92",
+    "path": "/mnt/raid1_4tb/Files/ALM_Replication/01_code/06_step5_regressions/06e_generate_figures.R",
+    "project_path": "01_code/06_step5_regressions/06e_generate_figures.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1778006420627.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "192,35",
+        "scrollLine": "162"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1778006503,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1778006503249,
+    "read_only": false,
+    "read_only_alternatives": []
+}

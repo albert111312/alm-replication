@@ -1,0 +1,12 @@
+# Raw data (cannot redistribute)
+00_data/
+*.dta
+*.rds
+*.rda
+
+# O*NET database
+onet_db*/
+
+# OS files
+.DS_Store
+Thumbs.db
