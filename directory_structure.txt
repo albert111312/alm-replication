@@ -1,4 +1,4 @@
-ALM_Replication
+ALM_Replication Directory Structure
 ├── 00_data
 │   ├── 00_raw
 │   │   ├── 01_census
@@ -73,21 +73,7 @@ ALM_Replication
 │   │       └── Priebe-Green_Crosswalk
 │   │           └── priebe-greene_crosswalk_1960_1970.csv
 │   ├── 01_intermediate
-│   │   ├── dot_task_means_occ70.rds
-│   │   ├── dot_task_means_occ80.rds
-│   │   ├── ind1990dd_crosswalk.rds
-│   │   ├── industry_cells.rds
-│   │   ├── industry_computer_use_dd.rds
-│   │   ├── industry_task_changes.rds
-│   │   ├── industry_task_percentiles.rds
-│   │   ├── industry_weights.rds
-│   │   ├── onet_task_means_occ1990dd.rds
-│   │   ├── workers_clean.rds
-│   │   ├── worker_tasks_extension.rds
-│   │   └── worker_tasks.rds
 │   └── 02_final
-│       ├── tableIII_data.rds
-│       └── tableIII_extension_data.rds
 ├── 00_master.R
 ├── 01_code
 │   ├── 01_data_preparation
@@ -115,13 +101,7 @@ ALM_Replication
 ├── 01_config.R
 ├── 02_output
 │   ├── 01_tables
-│   │   ├── tableIII_comparison.png
-│   │   ├── tableIII_extension.png
-│   │   ├── tableIII_replication.png
-│   │   └── tableIII_results.rds
 │   └── 02_figures
-│       ├── fig1_coefficient_plot.png
-│       └── fig2_task_trends.png
 ├── ALM_Replication.Rproj
 ├── directory_structure.txt
 └── readme.md
