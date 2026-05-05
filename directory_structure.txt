@@ -1,0 +1,127 @@
+ALM_Replication
+├── 00_data
+│   ├── 00_raw
+│   │   ├── 01_census
+│   │   │   └── census_1960_70_80_90.dta
+│   │   ├── 02_cps_morg
+│   │   │   ├── cps_basic_monthly_00_10_19_20.dta
+│   │   │   ├── morg80.dta
+│   │   │   ├── morg90.dta
+│   │   │   └── morg98.dta
+│   │   ├── 03_cps_computer
+│   │   │   └── cps_computer_use_all.dta
+│   │   ├── 04_dot
+│   │   │   ├── 07845-0001-Data.dta
+│   │   │   ├── 07845-0002-Data.dta
+│   │   │   ├── 07845-Codebook.pdf
+│   │   │   └── 07845-description-citation.html
+│   │   ├── 05_onet
+│   │   │   ├── Abilities to Work Activities.txt
+│   │   │   ├── Abilities to Work Context.txt
+│   │   │   ├── Abilities.txt
+│   │   │   ├── Alternate Titles.txt
+│   │   │   ├── Basic Interests to RIASEC.txt
+│   │   │   ├── Content Model Reference.txt
+│   │   │   ├── DWA Reference.txt
+│   │   │   ├── Education, Training, and Experience Categories.txt
+│   │   │   ├── Education, Training, and Experience.txt
+│   │   │   ├── Emerging Tasks.txt
+│   │   │   ├── Interests Illustrative Activities.txt
+│   │   │   ├── Interests Illustrative Occupations.txt
+│   │   │   ├── Interests.txt
+│   │   │   ├── IWA Reference.txt
+│   │   │   ├── Job Zone Reference.txt
+│   │   │   ├── Job Zones.txt
+│   │   │   ├── Knowledge.txt
+│   │   │   ├── Level Scale Anchors.txt
+│   │   │   ├── Occupation Data.txt
+│   │   │   ├── Occupation Level Metadata.txt
+│   │   │   ├── Read Me.txt
+│   │   │   ├── Related Occupations.txt
+│   │   │   ├── RIASEC Keywords.txt
+│   │   │   ├── Sample of Reported Titles.txt
+│   │   │   ├── Scales Reference.txt
+│   │   │   ├── Skills to Work Activities.txt
+│   │   │   ├── Skills to Work Context.txt
+│   │   │   ├── Skills.txt
+│   │   │   ├── Survey Booklet Locations.txt
+│   │   │   ├── Task Categories.txt
+│   │   │   ├── Task Ratings.txt
+│   │   │   ├── Task Statements.txt
+│   │   │   ├── Tasks to DWAs.txt
+│   │   │   ├── Technology Skills.txt
+│   │   │   ├── Tools Used.txt
+│   │   │   ├── UNSPSC Reference.txt
+│   │   │   ├── Work Activities.txt
+│   │   │   ├── Work Context Categories.txt
+│   │   │   ├── Work Context.txt
+│   │   │   ├── Work Styles.txt
+│   │   │   └── Work Values.txt
+│   │   └── 06_crosswalks
+│   │       ├── Census_Occupation_Code_2010
+│   │       │   └── 2010-occ-codes-with-crosswalk-from-2002-2011.xls
+│   │       ├── Dorn_A8
+│   │       │   ├── a8_occ2010_occ1990dd.dta
+│   │       │   └── README for occ2010_occ1990dd.dta .txt
+│   │       ├── Dorn_C4
+│   │       │   ├── Readme.txt
+│   │       │   └── subfile_ind1990dd.do
+│   │       ├── ICPSR_08942_Treiman
+│   │       │   ├── 08942-0001-Codebook.pdf
+│   │       │   ├── 08942-0001-Data.dta
+│   │       │   └── 08942-description-citation.html
+│   │       └── Priebe-Green_Crosswalk
+│   │           └── priebe-greene_crosswalk_1960_1970.csv
+│   ├── 01_intermediate
+│   │   ├── dot_task_means_occ70.rds
+│   │   ├── dot_task_means_occ80.rds
+│   │   ├── ind1990dd_crosswalk.rds
+│   │   ├── industry_cells.rds
+│   │   ├── industry_computer_use_dd.rds
+│   │   ├── industry_task_changes.rds
+│   │   ├── industry_task_percentiles.rds
+│   │   ├── industry_weights.rds
+│   │   ├── onet_task_means_occ1990dd.rds
+│   │   ├── workers_clean.rds
+│   │   ├── worker_tasks_extension.rds
+│   │   └── worker_tasks.rds
+│   └── 02_final
+│       ├── tableIII_data.rds
+│       └── tableIII_extension_data.rds
+├── 00_master.R
+├── 01_code
+│   ├── 01_data_preparation
+│   │   ├── 01a_clean_cps_census_replication.R
+│   │   ├── 01b_prepare_dot_tasks.R
+│   │   ├── 01c_build_crosswalks.R
+│   │   ├── 01d_prepare_onet_tasks.R
+│   │   └── 01e_clean_cps_extension.R
+│   ├── 02_step1_industry_task_levels
+│   │   ├── 02a_merge_tasks_to_workers.R
+│   │   ├── 02b_aggregate_to_industry_year.R
+│   │   └── 02c_convert_to_percentiles.R
+│   ├── 03_step2_task_changes
+│   │   └── 03a_compute_decade_changes.R
+│   ├── 04_step3_computerization
+│   │   └── 04a_build_computer_use.R
+│   ├── 05_step4_weights
+│   │   └── 05a_build_employment_weights.R
+│   └── 06_step5_regressions
+│       ├── 06a_merge_final_dataset.R
+│       ├── 06b_run_tableIII_regressions_original.R
+│       ├── 06c_run_tableIII_regressions_extension.R
+│       ├── 06d_generate_tables.R
+│       └── 06e_generate_figures.R
+├── 01_config.R
+├── 02_output
+│   ├── 01_tables
+│   │   ├── tableIII_comparison.png
+│   │   ├── tableIII_extension.png
+│   │   ├── tableIII_replication.png
+│   │   └── tableIII_results.rds
+│   └── 02_figures
+│       ├── fig1_coefficient_plot.png
+│       └── fig2_task_trends.png
+├── ALM_Replication.Rproj
+├── directory_structure.txt
+└── readme.md
