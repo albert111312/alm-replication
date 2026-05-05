@@ -1,7 +1,7 @@
 ## Replication: Autor, Levy, and Murnane (2003) Table III
 Albert G. Elam III, George Mason University, PUBP 804
 
-## Data Acquisition
+## Data
 This project requires data from the following sources.
 Researchers must register and agree to terms of use independently.
 
@@ -15,7 +15,7 @@ Researchers must register and agree to terms of use independently.
 7. David Dorn crosswalks (https://www.ddorn.net/data.htm): Files A8 and C4
 8. 2010 Census Occupation Codes with Crosswalk (https://www.census.gov/topics/employment/industry-occupation/guidance/code-lists.html): 2010-occ-codes-with-crosswalk-from-2002-2011.xls
 
-Place files in the DATA_RAW/ subdirectories as described in each script header.
+Place files in a new 00_data folder according to the sturcture in directory_structure.txt.
 
 ## Execution
 Source config.R to set paths, then run 00_master.R.
